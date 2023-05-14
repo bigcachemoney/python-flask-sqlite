@@ -38,9 +38,9 @@ def addrec():
 
                 con.commit()
                 msg = "Record successfully added to database"
-        except:
+        except sqlite3.Error as error:
             con.rollback()
-            msg = "Error in the INSERT"
+            msg = f"Error in the Edit: {error}"
 
         finally:
             con.close()
@@ -75,7 +75,7 @@ def edit():
             con.row_factory = sqlite3.Row
 
             cur = con.cursor()
-            cur.execute("SELECT rowid, * FROM students WHERE rowid = " + id)
+            cur.execute("SELECT rowid, * FROM students WHERE rowid = ?", (id,))
 
             rows = cur.fetchall()
         except:
@@ -101,13 +101,16 @@ def editrec():
             # UPDATE a specific record in the database based on the rowid
             with sqlite3.connect('database.db') as con:
                 cur = con.cursor()
-                cur.execute("UPDATE students SET name='"+nm+"', addr='"+addr+"', city='"+city+"', zip='"+zip+"' WHERE rowid="+rowid)
+                query = "UPDATE students SET name=?, addr=?, city=?, zip=? WHERE rowid=?"
+                params = (nm, addr, city, zip, rowid)
+                cur.execute(query, params)
+
 
                 con.commit()
                 msg = "Record successfully edited in the database"
-        except:
+        except sqlite3.Error as error:
             con.rollback()
-            msg = "Error in the Edit: UPDATE students SET name="+nm+", addr="+addr+", city="+city+", zip="+zip+" WHERE rowid="+rowid
+            msg = f"Error in the Edit: {error}"
 
         finally:
             con.close()
